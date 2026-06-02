@@ -1,6 +1,7 @@
 import AVFoundation
 import CoreImage
 import Photos
+import UIKit
 
 final class CameraViewModel: NSObject, ObservableObject {
   enum SessionState {
