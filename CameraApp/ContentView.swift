@@ -34,6 +34,9 @@ struct ContentView: View {
             if camera.cameraPermission == .authorized {
               Text("Dostep do aparatu OK")
                 .foregroundColor(.white)
+            } else if camera.cameraPermission == .denied {
+              Text("Brak dostepu do aparatu")
+                .foregroundColor(.white)
             } else if didCheckCameraPermission {
               Text("Czekam na zgode aparatu")
                 .foregroundColor(.white)

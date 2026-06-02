@@ -1,4 +1,5 @@
 import AVFoundation
+import Foundation
 import Photos
 
 enum PermissionState {
@@ -9,6 +10,11 @@ enum PermissionState {
 
 enum Permissions {
   static func requestCamera(completion: @escaping (PermissionState) -> Void) {
+    guard Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription") != nil else {
+      completion(.denied)
+      return
+    }
+
     let status = AVCaptureDevice.authorizationStatus(for: .video)
     switch status {
     case .authorized:

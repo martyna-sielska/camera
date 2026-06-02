@@ -12,3 +12,7 @@ targets:
       - path: assets
     info:
       path: CameraApp/Info.plist
+      properties:
+        NSCameraUsageDescription: "Potrzebujemy dostepu do kamery do robienia zdjec."
+        NSPhotoLibraryAddUsageDescription: "Potrzebujemy zapisywac zdjecia w galerii."
+        NSPhotoLibraryUsageDescription: "Potrzebujemy zapisywac zdjecia w galerii."
