@@ -37,6 +37,10 @@ final class CameraViewModel: NSObject, ObservableObject {
     session
   }
 
+  func requestCameraOnly() {
+    requestCameraPermission { _ in }
+  }
+
   func startSession() {
     startDateTimer()
     requestCameraPermission { [weak self] cameraAuthorized in
