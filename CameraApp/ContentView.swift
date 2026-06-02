@@ -3,11 +3,31 @@ import SwiftUI
 struct ContentView: View {
   @StateObject private var camera = CameraViewModel()
   @State private var overlayLayout: OverlayLayout?
+  @State private var isCameraStarted = false
 
   var body: some View {
     GeometryReader { geo in
       ZStack(alignment: .topLeading) {
-        if let overlayLayout {
+        if !isCameraStarted {
+          Color.black
+            .ignoresSafeArea()
+
+          VStack(spacing: 16) {
+            Text("CameraApp")
+              .font(.title)
+              .foregroundColor(.white)
+
+            Button("Uruchom kamere") {
+              isCameraStarted = true
+              camera.startSession()
+              DispatchQueue.main.async {
+                overlayLayout = OverlayProcessor.loadOverlayLayout()
+              }
+            }
+            .buttonStyle(.borderedProminent)
+          }
+          .frame(width: geo.size.width, height: geo.size.height)
+        } else if let overlayLayout {
           let fit = FrameLayout.aspectFit(imageSize: overlayLayout.image.size, in: geo.size)
           let cutout = fit.map(rect: overlayLayout.cutoutRect)
 
@@ -34,25 +54,21 @@ struct ContentView: View {
             .allowsHitTesting(false)
         }
 
-        ShutterButton {
-          camera.capturePhoto()
+        if isCameraStarted {
+          ShutterButton {
+            camera.capturePhoto()
+          }
+          .frame(
+            width: min(geo.size.width, geo.size.height) * 0.12,
+            height: min(geo.size.width, geo.size.height) * 0.12
+          )
+          .position(x: geo.size.width * 0.83, y: geo.size.height * 0.80)
         }
-        .frame(
-          width: min(geo.size.width, geo.size.height) * 0.12,
-          height: min(geo.size.width, geo.size.height) * 0.12
-        )
-        .position(x: geo.size.width * 0.83, y: geo.size.height * 0.80)
 
         if camera.cameraPermission == .denied {
           PermissionOverlayView(text: "Brak dostepu do kamery. Wlacz uprawnienia w Ustawieniach.")
         } else if camera.photoPermission == .denied {
           PermissionOverlayView(text: "Brak dostepu do galerii. Wlacz uprawnienia w Ustawieniach.")
-        }
-      }
-      .onAppear {
-        camera.startSession()
-        DispatchQueue.main.async {
-          overlayLayout = OverlayProcessor.loadOverlayLayout()
         }
       }
       .onDisappear {
