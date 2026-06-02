@@ -64,7 +64,6 @@ final class CameraViewModel: NSObject, ObservableObject {
     isCapturing = true
 
     let settings = AVCapturePhotoSettings()
-    settings.isHighResolutionPhotoEnabled = true
     photoOutput.capturePhoto(with: settings, delegate: self)
   }
 
@@ -117,7 +116,6 @@ final class CameraViewModel: NSObject, ObservableObject {
 
     if session.canAddOutput(photoOutput) {
       session.addOutput(photoOutput)
-      photoOutput.isHighResolutionCaptureEnabled = true
     }
 
     if let connection = photoOutput.connection(with: .video) {
@@ -126,13 +124,19 @@ final class CameraViewModel: NSObject, ObservableObject {
 
     session.commitConfiguration()
 
-    do {
-      try device.lockForConfiguration()
-      let maxZoom = device.activeFormat.videoMaxZoomFactor
-      device.videoZoomFactor = min(3.0, maxZoom)
-      device.unlockForConfiguration()
-    } catch {
-      // Ignore zoom errors.
+    if device.isFocusModeSupported(.continuousAutoFocus) || device.isExposureModeSupported(.continuousAutoExposure) {
+      do {
+        try device.lockForConfiguration()
+        if device.isFocusModeSupported(.continuousAutoFocus) {
+          device.focusMode = .continuousAutoFocus
+        }
+        if device.isExposureModeSupported(.continuousAutoExposure) {
+          device.exposureMode = .continuousAutoExposure
+        }
+        device.unlockForConfiguration()
+      } catch {
+        // Keep the session running even if focus/exposure cannot be changed.
+      }
     }
   }
 

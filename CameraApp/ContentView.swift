@@ -20,9 +20,6 @@ struct ContentView: View {
             Button("Uruchom kamere") {
               isCameraStarted = true
               camera.startSession()
-              DispatchQueue.main.async {
-                overlayLayout = OverlayProcessor.loadOverlayLayout()
-              }
             }
             .buttonStyle(.borderedProminent)
           }
