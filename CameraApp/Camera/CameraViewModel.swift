@@ -36,6 +36,10 @@ final class CameraViewModel: NSObject, ObservableObject {
     }
   }
 
+  var captureSession: AVCaptureSession {
+    session
+  }
+
   func attachPreview(_ view: MTKView) {
     if let renderer = PreviewRenderer(mtkView: view) {
       self.renderer = renderer
@@ -212,12 +216,13 @@ extension CameraViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
     didOutput sampleBuffer: CMSampleBuffer,
     from connection: AVCaptureConnection
   ) {
+    guard let renderer else { return }
     guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
     var image = CIImage(cvPixelBuffer: pixelBuffer)
     image = image.oriented(.right)
     image = CameraFilters.applyPreview(to: image)
-    renderer?.currentImage = image
-    renderer?.requestRedraw()
+    renderer.currentImage = image
+    renderer.requestRedraw()
   }
 }
 
