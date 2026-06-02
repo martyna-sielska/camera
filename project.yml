@@ -1,0 +1,14 @@
+name: CameraApp
+options:
+  bundleIdPrefix: com.example
+targets:
+  CameraApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: CameraApp
+    resources:
+      - path: assets
+    info:
+      path: CameraApp/Info.plist
