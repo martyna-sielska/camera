@@ -1,7 +1,6 @@
 import AVFoundation
 import CoreImage
 import Photos
-import MetalKit
 
 final class CameraViewModel: NSObject, ObservableObject {
   enum SessionState {
@@ -19,12 +18,9 @@ final class CameraViewModel: NSObject, ObservableObject {
 
   private let session = AVCaptureSession()
   private let sessionQueue = DispatchQueue(label: "camera.session")
-  private let videoQueue = DispatchQueue(label: "camera.video")
-  private let videoOutput = AVCaptureVideoDataOutput()
   private let photoOutput = AVCapturePhotoOutput()
   private let ciContext = CIContext()
 
-  private var renderer: PreviewRenderer?
   private var isConfigured = false
   private var isCapturing = false
   private var dateTimer: Timer?
@@ -40,28 +36,19 @@ final class CameraViewModel: NSObject, ObservableObject {
     session
   }
 
-  func attachPreview(_ view: MTKView) {
-    if let renderer = PreviewRenderer(mtkView: view) {
-      self.renderer = renderer
-      view.delegate = renderer
-    }
-  }
-
   func startSession() {
     startDateTimer()
-    requestPermissions { [weak self] cameraAuthorized in
+    requestCameraPermission { [weak self] cameraAuthorized in
       guard let self else { return }
       if cameraAuthorized {
         self.startSessionIfNeeded()
       }
     }
-    volumeListener.start()
   }
 
   func stopSession() {
     dateTimer?.invalidate()
     dateTimer = nil
-    volumeListener.stop()
     sessionQueue.async { [weak self] in
       self?.session.stopRunning()
     }
@@ -80,29 +67,12 @@ final class CameraViewModel: NSObject, ObservableObject {
     photoOutput.capturePhoto(with: settings, delegate: self)
   }
 
-  private func requestPermissions(completion: @escaping (Bool) -> Void) {
-    let group = DispatchGroup()
-    var cameraAuthorized = false
-
-    group.enter()
+  private func requestCameraPermission(completion: @escaping (Bool) -> Void) {
     Permissions.requestCamera { [weak self] state in
       DispatchQueue.main.async {
         self?.cameraPermission = state
       }
-      cameraAuthorized = (state == .authorized)
-      group.leave()
-    }
-
-    group.enter()
-    Permissions.requestPhotoLibraryAdd { [weak self] state in
-      DispatchQueue.main.async {
-        self?.photoPermission = state
-      }
-      group.leave()
-    }
-
-    group.notify(queue: .main) {
-      completion(cameraAuthorized)
+      completion(state == .authorized)
     }
   }
 
@@ -149,18 +119,6 @@ final class CameraViewModel: NSObject, ObservableObject {
       photoOutput.isHighResolutionCaptureEnabled = true
     }
 
-    if session.canAddOutput(videoOutput) {
-      videoOutput.videoSettings = [
-        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-      ]
-      videoOutput.alwaysDiscardsLateVideoFrames = true
-      videoOutput.setSampleBufferDelegate(self, queue: videoQueue)
-      session.addOutput(videoOutput)
-    }
-
-    if let connection = videoOutput.connection(with: .video) {
-      connection.videoOrientation = .portrait
-    }
     if let connection = photoOutput.connection(with: .video) {
       connection.videoOrientation = .portrait
     }
@@ -185,6 +143,20 @@ final class CameraViewModel: NSObject, ObservableObject {
   }
 
   private func saveToPhotos(image: UIImage) {
+    if photoPermission == .unknown {
+      Permissions.requestPhotoLibraryAdd { [weak self] state in
+        DispatchQueue.main.async {
+          self?.photoPermission = state
+          guard state == .authorized else {
+            self?.isCapturing = false
+            return
+          }
+          self?.saveToPhotos(image: image)
+        }
+      }
+      return
+    }
+
     guard photoPermission == .authorized else {
       DispatchQueue.main.async { [weak self] in
         self?.isCapturing = false
@@ -207,22 +179,6 @@ final class CameraViewModel: NSObject, ObservableObject {
         self?.isCapturing = false
       }
     }
-  }
-}
-
-extension CameraViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
-  func captureOutput(
-    _ output: AVCaptureOutput,
-    didOutput sampleBuffer: CMSampleBuffer,
-    from connection: AVCaptureConnection
-  ) {
-    guard let renderer else { return }
-    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-    var image = CIImage(cvPixelBuffer: pixelBuffer)
-    image = image.oriented(.right)
-    image = CameraFilters.applyPreview(to: image)
-    renderer.currentImage = image
-    renderer.requestRedraw()
   }
 }
 

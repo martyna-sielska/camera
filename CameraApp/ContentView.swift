@@ -1,6 +1,4 @@
 import SwiftUI
-import MediaPlayer
-import UIKit
 
 struct ContentView: View {
   @StateObject private var camera = CameraViewModel()
@@ -45,10 +43,6 @@ struct ContentView: View {
         )
         .position(x: geo.size.width * 0.83, y: geo.size.height * 0.80)
 
-        VolumeButtonView(listener: camera.volumeListener)
-          .frame(width: 1, height: 1)
-          .opacity(0.01)
-
         if camera.cameraPermission == .denied {
           PermissionOverlayView(text: "Brak dostepu do kamery. Wlacz uprawnienia w Ustawieniach.")
         } else if camera.photoPermission == .denied {
@@ -57,7 +51,9 @@ struct ContentView: View {
       }
       .onAppear {
         camera.startSession()
-        overlayLayout = OverlayProcessor.loadOverlayLayout()
+        DispatchQueue.main.async {
+          overlayLayout = OverlayProcessor.loadOverlayLayout()
+        }
       }
       .onDisappear {
         camera.stopSession()
@@ -97,17 +93,3 @@ struct PermissionOverlayView: View {
   }
 }
 
-struct VolumeButtonView: UIViewRepresentable {
-  let listener: VolumeButtonListener
-
-  func makeUIView(context: Context) -> UIView {
-    let container = UIView(frame: .zero)
-    let volumeView = MPVolumeView(frame: .zero)
-    volumeView.alpha = 0.01
-    container.addSubview(volumeView)
-    listener.attach(volumeView: volumeView)
-    return container
-  }
-
-  func updateUIView(_ uiView: UIView, context: Context) {}
-}
