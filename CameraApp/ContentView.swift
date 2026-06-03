@@ -5,6 +5,7 @@ struct ContentView: View {
   @State private var overlayLayout: OverlayLayout?
   @State private var isCameraStarted = false
   @State private var didCheckCameraPermission = false
+  @State private var didTryLoadingOverlay = false
 
   var body: some View {
     GeometryReader { geo in
@@ -27,6 +28,7 @@ struct ContentView: View {
             if camera.cameraPermission == .authorized {
               Button("Uruchom kamere") {
                 overlayLayout = OverlayProcessor.loadOverlayLayout()
+                didTryLoadingOverlay = true
                 isCameraStarted = true
                 camera.startSession()
               }
@@ -70,6 +72,15 @@ struct ContentView: View {
           PixelDateView(date: camera.currentDate)
             .frame(width: geo.size.width, height: geo.size.height)
             .allowsHitTesting(false)
+
+          if didTryLoadingOverlay {
+            Text("Nie znaleziono ramki cameratemplate.jpg")
+              .font(.footnote)
+              .foregroundColor(.white)
+              .padding(10)
+              .background(Color.black.opacity(0.7))
+              .position(x: geo.size.width / 2, y: 40)
+          }
         }
 
         if isCameraStarted {

@@ -20,14 +20,24 @@ enum OverlayProcessor {
       return image
     }
 
-    let urls = [
+    let directUrls = [
       Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg"),
       Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg", subdirectory: "assets")
     ]
 
-    for url in urls {
+    for url in directUrls {
       if let url, let image = UIImage(contentsOfFile: url.path) {
         return image
+      }
+    }
+
+    if let resourcePath = Bundle.main.resourcePath,
+       let enumerator = FileManager.default.enumerator(atPath: resourcePath) {
+      for case let path as String in enumerator where path.hasSuffix("cameratemplate.jpg") {
+        let fullPath = (resourcePath as NSString).appendingPathComponent(path)
+        if let image = UIImage(contentsOfFile: fullPath) {
+          return image
+        }
       }
     }
 

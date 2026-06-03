@@ -9,7 +9,7 @@ targets:
     sources:
       - path: CameraApp
     resources:
-      - path: assets
+      - path: assets/cameratemplate.jpg
     info:
       path: CameraApp/Info.plist
       properties:
