@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
   @StateObject private var camera = CameraViewModel()
+  @State private var overlayLayout: OverlayLayout?
   @State private var isCameraStarted = false
   @State private var didCheckCameraPermission = false
 
@@ -25,6 +26,7 @@ struct ContentView: View {
 
             if camera.cameraPermission == .authorized {
               Button("Uruchom kamere") {
+                overlayLayout = OverlayProcessor.loadOverlayLayout()
                 isCameraStarted = true
                 camera.startSession()
               }
@@ -43,6 +45,24 @@ struct ContentView: View {
             }
           }
           .frame(width: geo.size.width, height: geo.size.height)
+        } else if let overlayLayout {
+          let fit = FrameLayout.aspectFit(imageSize: overlayLayout.image.size, in: geo.size)
+          let cutout = fit.map(rect: overlayLayout.cutoutRect)
+
+          CameraPreviewView(viewModel: camera)
+            .frame(width: cutout.width, height: cutout.height)
+            .position(x: cutout.midX, y: cutout.midY)
+
+          PixelDateView(date: camera.currentDate)
+            .frame(width: cutout.width, height: cutout.height)
+            .position(x: cutout.midX, y: cutout.midY)
+            .allowsHitTesting(false)
+
+          Image(uiImage: overlayLayout.image)
+            .resizable()
+            .frame(width: fit.size.width, height: fit.size.height)
+            .position(x: fit.origin.x + fit.size.width / 2, y: fit.origin.y + fit.size.height / 2)
+            .allowsHitTesting(false)
         } else {
           CameraPreviewView(viewModel: camera)
             .ignoresSafeArea()

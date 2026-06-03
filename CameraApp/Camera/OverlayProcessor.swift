@@ -16,10 +16,22 @@ enum OverlayProcessor {
   }
 
   static func loadTemplateImage() -> UIImage? {
-    guard let url = Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg") else {
-      return nil
+    if let image = UIImage(named: "cameratemplate") {
+      return image
     }
-    return UIImage(contentsOfFile: url.path)
+
+    let urls = [
+      Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg"),
+      Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg", subdirectory: "assets")
+    ]
+
+    for url in urls {
+      if let url, let image = UIImage(contentsOfFile: url.path) {
+        return image
+      }
+    }
+
+    return nil
   }
 
   private static func convertToPoints(rect: CGRect, scale: CGFloat) -> CGRect {
