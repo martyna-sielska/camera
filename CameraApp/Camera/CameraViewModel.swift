@@ -123,7 +123,7 @@ final class CameraViewModel: NSObject, ObservableObject {
     }
 
     if let connection = photoOutput.connection(with: .video) {
-      connection.videoOrientation = .portrait
+      connection.videoOrientation = .landscapeRight
     }
 
     session.commitConfiguration()

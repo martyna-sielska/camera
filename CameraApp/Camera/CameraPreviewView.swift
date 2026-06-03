@@ -9,11 +9,13 @@ struct CameraPreviewView: UIViewRepresentable {
     let view = CameraPreviewContainerView()
     view.previewLayer.session = viewModel.captureSession
     view.previewLayer.videoGravity = .resizeAspectFill
+    view.updateVideoOrientation()
     return view
   }
 
   func updateUIView(_ uiView: CameraPreviewContainerView, context: Context) {
     uiView.previewLayer.session = viewModel.captureSession
+    uiView.updateVideoOrientation()
   }
 }
 
@@ -24,5 +26,16 @@ final class CameraPreviewContainerView: UIView {
 
   var previewLayer: AVCaptureVideoPreviewLayer {
     layer as! AVCaptureVideoPreviewLayer
+  }
+
+  override func layoutSubviews() {
+    super.layoutSubviews()
+    updateVideoOrientation()
+  }
+
+  func updateVideoOrientation() {
+    if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
+      connection.videoOrientation = .landscapeRight
+    }
   }
 }

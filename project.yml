@@ -13,6 +13,12 @@ targets:
     info:
       path: CameraApp/Info.plist
       properties:
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeRight
+          - UIInterfaceOrientationLandscapeLeft
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationLandscapeRight
+          - UIInterfaceOrientationLandscapeLeft
         NSCameraUsageDescription: "Potrzebujemy dostepu do kamery do robienia zdjec."
         NSPhotoLibraryAddUsageDescription: "Potrzebujemy zapisywac zdjecia w galerii."
         NSPhotoLibraryUsageDescription: "Potrzebujemy zapisywac zdjecia w galerii."
