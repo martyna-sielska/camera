@@ -109,8 +109,8 @@ struct ContentView: View {
       .onDisappear {
         camera.stopSession()
       }
-      .ignoresSafeArea()
     }
+    .ignoresSafeArea(.all)
   }
 }
 

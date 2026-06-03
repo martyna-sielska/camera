@@ -13,6 +13,8 @@ targets:
     info:
       path: CameraApp/Info.plist
       properties:
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationLandscapeRight
           - UIInterfaceOrientationLandscapeLeft
