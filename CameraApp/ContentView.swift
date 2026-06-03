@@ -48,8 +48,14 @@ struct ContentView: View {
           }
           .frame(width: geo.size.width, height: geo.size.height)
         } else if let overlayLayout {
-          let fit = FrameLayout.aspectFill(imageSize: overlayLayout.image.size, in: geo.size)
-          let cutout = fit.map(rect: overlayLayout.cutoutRect)
+          let scaleX = geo.size.width / overlayLayout.image.size.width
+          let scaleY = geo.size.height / overlayLayout.image.size.height
+          let cutout = CGRect(
+            x: overlayLayout.cutoutRect.origin.x * scaleX,
+            y: overlayLayout.cutoutRect.origin.y * scaleY,
+            width: overlayLayout.cutoutRect.width * scaleX,
+            height: overlayLayout.cutoutRect.height * scaleY
+          )
 
           CameraPreviewView(viewModel: camera)
             .frame(width: cutout.width, height: cutout.height)
@@ -62,8 +68,8 @@ struct ContentView: View {
 
           Image(uiImage: overlayLayout.image)
             .resizable()
-            .frame(width: fit.size.width, height: fit.size.height)
-            .position(x: fit.origin.x + fit.size.width / 2, y: fit.origin.y + fit.size.height / 2)
+            .frame(width: geo.size.width, height: geo.size.height)
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
             .allowsHitTesting(false)
         } else {
           CameraPreviewView(viewModel: camera)
@@ -88,10 +94,10 @@ struct ContentView: View {
             camera.capturePhoto()
           }
           .frame(
-            width: min(geo.size.width, geo.size.height) * 0.12,
-            height: min(geo.size.width, geo.size.height) * 0.12
+            width: min(geo.size.width, geo.size.height) * 0.10,
+            height: min(geo.size.width, geo.size.height) * 0.10
           )
-          .position(x: geo.size.width * 0.83, y: geo.size.height * 0.80)
+          .position(x: geo.size.width * 0.88, y: geo.size.height * 0.78)
         }
 
         if camera.cameraPermission == .denied {
