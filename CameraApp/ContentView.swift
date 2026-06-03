@@ -48,7 +48,7 @@ struct ContentView: View {
           }
           .frame(width: geo.size.width, height: geo.size.height)
         } else if let overlayLayout {
-          let fit = FrameLayout.aspectFit(imageSize: overlayLayout.image.size, in: geo.size)
+          let fit = FrameLayout.aspectFill(imageSize: overlayLayout.image.size, in: geo.size)
           let cutout = fit.map(rect: overlayLayout.cutoutRect)
 
           CameraPreviewView(viewModel: camera)
@@ -74,7 +74,7 @@ struct ContentView: View {
             .allowsHitTesting(false)
 
           if didTryLoadingOverlay {
-            Text("Nie znaleziono ramki cameratemplate.jpg")
+            Text("Nie znaleziono ramki frame.jpg")
               .font(.footnote)
               .foregroundColor(.white)
               .padding(10)
@@ -103,6 +103,7 @@ struct ContentView: View {
       .onDisappear {
         camera.stopSession()
       }
+      .ignoresSafeArea()
     }
   }
 }

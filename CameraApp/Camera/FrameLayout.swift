@@ -15,6 +15,16 @@ struct FrameLayout {
     return FrameLayout(origin: origin, size: size, scale: scale)
   }
 
+  static func aspectFill(imageSize: CGSize, in viewSize: CGSize) -> FrameLayout {
+    let scale = max(viewSize.width / imageSize.width, viewSize.height / imageSize.height)
+    let size = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
+    let origin = CGPoint(
+      x: (viewSize.width - size.width) / 2,
+      y: (viewSize.height - size.height) / 2
+    )
+    return FrameLayout(origin: origin, size: size, scale: scale)
+  }
+
   func map(rect: CGRect) -> CGRect {
     CGRect(
       x: origin.x + rect.origin.x * scale,

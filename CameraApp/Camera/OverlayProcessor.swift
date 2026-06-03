@@ -16,13 +16,13 @@ enum OverlayProcessor {
   }
 
   static func loadTemplateImage() -> UIImage? {
-    if let image = UIImage(named: "cameratemplate") {
+    if let image = UIImage(named: "frame") {
       return image
     }
 
     let directUrls = [
-      Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg"),
-      Bundle.main.url(forResource: "cameratemplate", withExtension: "jpg", subdirectory: "assets")
+      Bundle.main.url(forResource: "frame", withExtension: "jpg"),
+      Bundle.main.url(forResource: "frame", withExtension: "jpg", subdirectory: "assets")
     ]
 
     for url in directUrls {
@@ -33,7 +33,7 @@ enum OverlayProcessor {
 
     if let resourcePath = Bundle.main.resourcePath,
        let enumerator = FileManager.default.enumerator(atPath: resourcePath) {
-      for case let path as String in enumerator where path.hasSuffix("cameratemplate.jpg") {
+      for case let path as String in enumerator where path.hasSuffix("frame.jpg") {
         let fullPath = (resourcePath as NSString).appendingPathComponent(path)
         if let image = UIImage(contentsOfFile: fullPath) {
           return image
