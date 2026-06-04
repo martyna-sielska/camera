@@ -51,11 +51,16 @@ struct ContentView: View {
         } else if let overlayLayout {
           let scaleX = geo.size.width / overlayLayout.image.size.width
           let scaleY = geo.size.height / overlayLayout.image.size.height
+          let scale = max(scaleX, scaleY)
+          let scaledW = overlayLayout.image.size.width * scale
+          let scaledH = overlayLayout.image.size.height * scale
+          let imgOffsetX = (geo.size.width - scaledW) / 2
+          let imgOffsetY = (geo.size.height - scaledH) / 2
           let cutout = CGRect(
-            x: overlayLayout.cutoutRect.origin.x * scaleX,
-            y: overlayLayout.cutoutRect.origin.y * scaleY,
-            width: overlayLayout.cutoutRect.width * scaleX,
-            height: overlayLayout.cutoutRect.height * scaleY
+            x: imgOffsetX + overlayLayout.cutoutRect.origin.x * scale,
+            y: imgOffsetY + overlayLayout.cutoutRect.origin.y * scale,
+            width: overlayLayout.cutoutRect.width * scale,
+            height: overlayLayout.cutoutRect.height * scale
           )
 
           CameraPreviewView(viewModel: camera)
@@ -69,7 +74,9 @@ struct ContentView: View {
 
           Image(uiImage: overlayLayout.image)
             .resizable()
+            .scaledToFill()
             .frame(width: geo.size.width, height: geo.size.height)
+            .clipped()
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
             .allowsHitTesting(false)
         } else {
