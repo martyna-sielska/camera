@@ -51,7 +51,7 @@ struct ContentView: View {
         } else if let overlayLayout {
           let scaleX = geo.size.width / overlayLayout.image.size.width
           let scaleY = geo.size.height / overlayLayout.image.size.height
-          let scale = max(scaleX, scaleY)
+          let scale = min(scaleX, scaleY)
           let scaledW = overlayLayout.image.size.width * scale
           let scaledH = overlayLayout.image.size.height * scale
           let imgOffsetX = (geo.size.width - scaledW) / 2
@@ -74,9 +74,8 @@ struct ContentView: View {
 
           Image(uiImage: overlayLayout.image)
             .resizable()
-            .scaledToFill()
+            .scaledToFit()
             .frame(width: geo.size.width, height: geo.size.height)
-            .clipped()
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
             .allowsHitTesting(false)
         } else {
