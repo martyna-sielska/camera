@@ -12,7 +12,56 @@ enum OverlayProcessor {
     let cutoutPoints = convertToPoints(rect: cutoutPixels, scale: image.scale)
     let cleaned = removeBorderWhite(from: image, threshold: 245)
     let punched = punchHole(in: cleaned, rect: cutoutPoints.insetBy(dx: 2, dy: 2))
+    if let (cropped, adjustedCutout) = cropToContent(image: punched, cutoutRect: cutoutPoints) {
+      return OverlayLayout(image: cropped, cutoutRect: adjustedCutout)
+    }
     return OverlayLayout(image: punched, cutoutRect: cutoutPoints)
+  }
+
+  private static func cropToContent(image: UIImage, cutoutRect: CGRect) -> (UIImage, CGRect)? {
+    guard let cgImage = image.cgImage else { return nil }
+    let downscale = 8
+    guard let buffer = PixelBuffer(image: image, downscale: downscale) else { return nil }
+
+    var minX = buffer.width, maxX = 0
+    var minY = buffer.height, maxY = 0
+
+    for y in 0..<buffer.height {
+      for x in 0..<buffer.width {
+        let alpha = buffer.data[(y * buffer.width + x) * 4 + 3]
+        if alpha > 10 {
+          if x < minX { minX = x }
+          if x > maxX { maxX = x }
+          if y < minY { minY = y }
+          if y > maxY { maxY = y }
+        }
+      }
+    }
+
+    guard minX < maxX && minY < maxY else { return nil }
+
+    let pixelMinX = minX * downscale
+    let pixelMinY = minY * downscale
+    let pixelMaxX = min((maxX + 1) * downscale, cgImage.width)
+    let pixelMaxY = min((maxY + 1) * downscale, cgImage.height)
+
+    let cropPixelRect = CGRect(
+      x: pixelMinX, y: pixelMinY,
+      width: pixelMaxX - pixelMinX,
+      height: pixelMaxY - pixelMinY
+    )
+    guard let croppedCG = cgImage.cropping(to: cropPixelRect) else { return nil }
+    let croppedImage = UIImage(cgImage: croppedCG, scale: image.scale, orientation: image.imageOrientation)
+
+    let pointScale = image.scale
+    let adjustedCutout = CGRect(
+      x: cutoutRect.origin.x - CGFloat(pixelMinX) / pointScale,
+      y: cutoutRect.origin.y - CGFloat(pixelMinY) / pointScale,
+      width: cutoutRect.width,
+      height: cutoutRect.height
+    )
+
+    return (croppedImage, adjustedCutout)
   }
 
   static func loadTemplateImage() -> UIImage? {
