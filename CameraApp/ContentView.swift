@@ -49,13 +49,15 @@ struct ContentView: View {
           }
           .frame(width: geo.size.width, height: geo.size.height)
         } else if let overlayLayout {
-          let scaleX = geo.size.width / overlayLayout.image.size.width
-          let scaleY = geo.size.height / overlayLayout.image.size.height
-          let scale = min(scaleX, scaleY)
+          let lw = max(geo.size.width, geo.size.height)
+          let lh = min(geo.size.width, geo.size.height)
+          let scaleX = lw / overlayLayout.image.size.width
+          let scaleY = lh / overlayLayout.image.size.height
+          let scale = max(scaleX, scaleY)
           let scaledW = overlayLayout.image.size.width * scale
           let scaledH = overlayLayout.image.size.height * scale
-          let imgOffsetX = (geo.size.width - scaledW) / 2
-          let imgOffsetY = (geo.size.height - scaledH) / 2
+          let imgOffsetX = (lw - scaledW) / 2
+          let imgOffsetY = (lh - scaledH) / 2
           let cutout = CGRect(
             x: imgOffsetX + overlayLayout.cutoutRect.origin.x * scale,
             y: imgOffsetY + overlayLayout.cutoutRect.origin.y * scale,
@@ -74,8 +76,9 @@ struct ContentView: View {
 
           Image(uiImage: overlayLayout.image)
             .resizable()
-            .scaledToFit()
-            .frame(width: geo.size.width, height: geo.size.height)
+            .scaledToFill()
+            .frame(width: lw, height: lh)
+            .clipped()
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
             .allowsHitTesting(false)
         } else {
