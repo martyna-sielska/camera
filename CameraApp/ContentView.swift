@@ -10,14 +10,6 @@ struct ContentView: View {
 
   var body: some View {
     GeometryReader { geo in
-      let screenBounds = UIScreen.main.bounds
-      let fullSize = CGSize(
-        width: max(screenBounds.width, screenBounds.height),
-        height: min(screenBounds.width, screenBounds.height)
-      )
-      let offsetX = (fullSize.width - geo.size.width) / 2
-      let offsetY = (fullSize.height - geo.size.height) / 2
-
       ZStack(alignment: .topLeading) {
         if !isCameraStarted {
           Color.black
@@ -57,8 +49,8 @@ struct ContentView: View {
           }
           .frame(width: geo.size.width, height: geo.size.height)
         } else if let overlayLayout {
-          let scaleX = fullSize.width / overlayLayout.image.size.width
-          let scaleY = fullSize.height / overlayLayout.image.size.height
+          let scaleX = geo.size.width / overlayLayout.image.size.width
+          let scaleY = geo.size.height / overlayLayout.image.size.height
           let cutout = CGRect(
             x: overlayLayout.cutoutRect.origin.x * scaleX,
             y: overlayLayout.cutoutRect.origin.y * scaleY,
@@ -68,17 +60,17 @@ struct ContentView: View {
 
           CameraPreviewView(viewModel: camera)
             .frame(width: cutout.width, height: cutout.height)
-            .position(x: cutout.midX - offsetX, y: cutout.midY - offsetY)
+            .position(x: cutout.midX, y: cutout.midY)
 
           PixelDateView(date: camera.currentDate)
             .frame(width: cutout.width, height: cutout.height)
-            .position(x: cutout.midX - offsetX, y: cutout.midY - offsetY)
+            .position(x: cutout.midX, y: cutout.midY)
             .allowsHitTesting(false)
 
           Image(uiImage: overlayLayout.image)
             .resizable()
-            .frame(width: fullSize.width, height: fullSize.height)
-            .position(x: fullSize.width / 2 - offsetX, y: fullSize.height / 2 - offsetY)
+            .frame(width: geo.size.width, height: geo.size.height)
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
             .allowsHitTesting(false)
         } else {
           CameraPreviewView(viewModel: camera)
@@ -103,10 +95,10 @@ struct ContentView: View {
             camera.capturePhoto()
           }
           .frame(
-            width: min(fullSize.width, fullSize.height) * 0.10,
-            height: min(fullSize.width, fullSize.height) * 0.10
+            width: min(geo.size.width, geo.size.height) * 0.10,
+            height: min(geo.size.width, geo.size.height) * 0.10
           )
-          .position(x: fullSize.width * 0.88 - offsetX, y: fullSize.height * 0.78 - offsetY)
+          .position(x: geo.size.width * 0.88, y: geo.size.height * 0.78)
         }
 
         if camera.cameraPermission == .denied {
